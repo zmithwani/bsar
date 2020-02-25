@@ -12,7 +12,7 @@ public interface UserService {
 
 	public boolean deleteUser(User account);
 
-	public User getUserById(User account);
+	public List<User> getUserById(User account);
 
 	public User getUserByName(User account);
 

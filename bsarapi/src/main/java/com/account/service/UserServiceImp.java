@@ -28,7 +28,7 @@ public class UserServiceImp implements UserService {
 		return accountdao.deleteUser(account);
 	}
 
-	public User getUserById(User account) {
+	public List<User> getUserById(User account) {
 		return accountdao.getUserById(account);
 	}
 

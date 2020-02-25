@@ -32,9 +32,9 @@ import com.account.util.RandomString;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(value = "/api")
 public class Controller {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(Controller.class);
-			
+
 	@Autowired
 	private UserService accountService;
 
@@ -62,8 +62,8 @@ public class Controller {
 		log.info(account.getPassword());
 		User user = accountService.getUserByName(account);
 		log.info(user.getPassword());
-		if (user != null && user.getPassword().trim().equals(account.getPassword().trim())
-				&& user.getLocked() != null && user.getLocked().trim().equals(Constant.ACTIVE)) {
+		if (user != null && user.getPassword().trim().equals(account.getPassword().trim()) && user.getLocked() != null
+				&& user.getLocked().trim().equals(Constant.ACTIVE)) {
 			log.info(user.getLocked());
 			return user;
 		}
@@ -136,16 +136,30 @@ public class Controller {
 	}
 
 	@GetMapping("user/{userid}")
-	public User allUserByID(@PathVariable("userid") int userid, User account) {
+	public List<User> allUserByID(@PathVariable("userid") int userid) {
+
+		User account = new User();
 		account.setUserId(userid);
-		return accountService.getUserById(account);
+		List<User> accounts = accountService.getUserById(account);
+
+		System.out.println(accounts.size());
+		return accounts;
 
 	}
 
 	@PostMapping("updateuser/{userid}")
 	public boolean updateAccount(@RequestBody User account, @PathVariable("userid") int userid) {
-		account.setUserId(userid);
-		return accountService.updateUser(account);
+		boolean status = false;
+		User userExist = userRepository.findByUserId(userid);
+		if (userExist != null) {
+			account.setUserId(userid);
+			account.setPassword(userExist.getPassword());
+			account.setLocked(userExist.getLocked());
+			account.setUpdatedAt(new Timestamp(new Date().getTime()));
+			status = accountService.updateUser(account);
+		}
+
+		return status;
 	}
 
 	@PostMapping("lockuser/{userid}")
@@ -181,11 +195,12 @@ public class Controller {
 				try {
 
 					String subject = "Account Registration";
-					String body = "Dear " + user.getUsername() + "," + "<br /> <br />" + "Your username and password are " + user.getUsername()  +  " and "  + user.getPassword()
+					String body = "Dear " + user.getUsername() + "," + "<br /> <br />"
+							+ "Your username and password are " + user.getUsername() + " and " + user.getPassword()
 							+ "<br /> <br />" + "Thank You";
 					EmailUtil emailUtil = new EmailUtil();
-					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port, subject,
-							body);
+					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port,
+							subject, body);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -193,7 +208,7 @@ public class Controller {
 		});
 
 	}
-	
+
 	private void sendEmailReset(User user) throws Exception {
 
 		ExecutorService emailExecutor = Executors.newCachedThreadPool();
@@ -203,11 +218,11 @@ public class Controller {
 				try {
 
 					String subject = "Password reset";
-					String body = "Dear " + user.getUsername() + "," + "<br /> <br />" + "Your password is reset to " + user.getPassword() + "."
-							+ "<br /> <br />" + "Thank You";
+					String body = "Dear " + user.getUsername() + "," + "<br /> <br />" + "Your password is reset to "
+							+ user.getPassword() + "." + "<br /> <br />" + "Thank You";
 					EmailUtil emailUtil = new EmailUtil();
-					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port, subject,
-							body);
+					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port,
+							subject, body);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -215,6 +230,5 @@ public class Controller {
 		});
 
 	}
-	
 
 }

@@ -1,5 +1,6 @@
 package com.account.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,15 @@ public class UserDAOImp implements UserDAO {
 	}
 
 	@Override
-	public User getUserById(User account) {
-		User list = accountRepository.findByUserId(account.getUserId());
+	public List<User> getUserById(User account) {
+		
+		System.out.println(account.getUserId());
+		List<User> list = new ArrayList<User>();
+		User user = accountRepository.findByUserId(account.getUserId());
+		if (user != null) {
+			list.add(user);
+		}
+		System.out.println(list.size());
 		return list;
 	}
 
