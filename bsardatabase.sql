@@ -62,7 +62,7 @@ CREATE TABLE `module` (
   PRIMARY KEY (`module_id`),
   UNIQUE KEY `moduleName` (`module_name`),
   UNIQUE KEY `moduleCode` (`module_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,6 +71,7 @@ CREATE TABLE `module` (
 
 LOCK TABLES `module` WRITE;
 /*!40000 ALTER TABLE `module` DISABLE KEYS */;
+INSERT INTO `module` VALUES (1,'SCIENCE','SCI','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(2,'COMPUTER SCIENCE','COMP','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(3,'OTHER','OTH','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL);
 /*!40000 ALTER TABLE `module` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -92,7 +93,7 @@ CREATE TABLE `moduleactivity` (
   PRIMARY KEY (`module_activity_id`),
   KEY `moduleID` (`module_id`),
   CONSTRAINT `moduleactivity_ibfk_1` FOREIGN KEY (`module_id`) REFERENCES `module` (`module_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,6 +102,7 @@ CREATE TABLE `moduleactivity` (
 
 LOCK TABLES `moduleactivity` WRITE;
 /*!40000 ALTER TABLE `moduleactivity` DISABLE KEYS */;
+INSERT INTO `moduleactivity` VALUES (1,1,'CLASSROOM','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(2,1,'PRACTICAL ','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(3,2,'THEORY','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(4,2,'LAB','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL);
 /*!40000 ALTER TABLE `moduleactivity` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -122,7 +124,7 @@ CREATE TABLE `moduleschedule` (
   PRIMARY KEY (`module_schedule_id`),
   KEY `moduleActivityID` (`module_activity_id`),
   CONSTRAINT `moduleschedule_ibfk_1` FOREIGN KEY (`module_activity_id`) REFERENCES `moduleactivity` (`module_activity_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -131,6 +133,7 @@ CREATE TABLE `moduleschedule` (
 
 LOCK TABLES `moduleschedule` WRITE;
 /*!40000 ALTER TABLE `moduleschedule` DISABLE KEYS */;
+INSERT INTO `moduleschedule` VALUES (1,1,'2020-02-18 18:30:00','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(2,2,'2020-02-18 18:30:00','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(3,3,'2020-02-18 18:30:00','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(4,4,'2020-02-18 18:30:00','2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL);
 /*!40000 ALTER TABLE `moduleschedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -165,7 +168,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (115,'admin123','pass1234','smartsystems1720@rediffmail.com',1,NULL,NULL,NULL,NULL,'ACTIVE'),(120,'tuytuytutyuy','O1eEvzG5','smaer@ytuytutyu.tyyutyuty',2,'2020-02-18 13:56:26',NULL,'2020-02-18 14:07:58',NULL,'ACTIVE'),(121,'uyyuuy','TPz8dbEB','uy@tytytyty.tyy',3,'2020-02-18 13:57:02',NULL,NULL,NULL,'ACTIVE');
+INSERT INTO `user` VALUES (115,'admin123','pass1234','smartsystems1720@rediffmail.com',1,NULL,NULL,NULL,NULL,'ACTIVE'),(120,'tuytuytutyuy','O1eEvzG5','smaer@ytuytutyu.tyyutyuty',2,'2020-02-18 13:56:26',NULL,'2020-02-20 11:59:04',NULL,'ACTIVE'),(121,'uyyuuy','TPz8dbEB','uy@tytytyty.tyy',3,'2020-02-18 13:57:02',NULL,'2020-02-20 12:49:49',NULL,'ACTIVE');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,6 +199,7 @@ CREATE TABLE `usermodule` (
 
 LOCK TABLES `usermodule` WRITE;
 /*!40000 ALTER TABLE `usermodule` DISABLE KEYS */;
+INSERT INTO `usermodule` VALUES (120,1,'2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(120,2,'2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(121,1,'2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL),(121,2,'2020-02-18 18:30:00',NULL,'2020-02-18 18:30:00',NULL);
 /*!40000 ALTER TABLE `usermodule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -237,4 +241,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-02-19  1:13:25
+-- Dump completed on 2020-02-25 18:26:50
