@@ -48,4 +48,9 @@ public class UserServiceImp implements UserService {
 		return accountdao.unlockUser(account);
 	}
 
+	@Override
+	public boolean fingerPrint(User account) {
+		return accountdao.fingerPrint(account);
+	}
+
 }

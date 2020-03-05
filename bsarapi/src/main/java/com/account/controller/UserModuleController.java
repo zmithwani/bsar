@@ -1,23 +1,32 @@
 package com.account.controller;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.account.model.Module;
 import com.account.model.ModuleActivity;
 import com.account.model.ModuleSchedule;
+import com.account.model.User;
 import com.account.model.UserModule;
 import com.account.model.dto.StudentDTO;
 import com.account.repository.ModuleActivityRepository;
 import com.account.repository.ModuleRepository;
 import com.account.repository.ModuleScheduleRepository;
+import com.account.repository.UserModuleRepository;
 import com.account.service.UserModuleService;
 
 @RestController
@@ -30,6 +39,9 @@ public class UserModuleController {
 
 	@Autowired
 	private ModuleRepository moduleRepository;
+
+	@Autowired
+	private UserModuleRepository userModuleRepository;
 
 	@Autowired
 	private ModuleActivityRepository moduleActivityRepository;
@@ -55,11 +67,17 @@ public class UserModuleController {
 				studentDetail.setUserId(userModule.getUserId());
 				studentDetail.setModuleId(userModule.getModuleId());
 				studentDetail.setModuleName(module.getModuleName());
+				studentDetail.setModuleCode(module.getModuleCode());
 				studentDetail.setModuleActivity(moduleActivity.getModuleActivity());
+				studentDetail.setActivityId(moduleActivity.getModuleActivityId());
+
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
-						.findBymoduleScheduleId(moduleActivity.getModuleActivityId());
+						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
+
 				for (ModuleSchedule moduleSchedule : moduleSchedules) {
+
 					studentDetail.setModuleSchedule(moduleSchedule.getModuleScheduled());
+					studentDetail.setScheduleId(moduleSchedule.getModuleScheduleId());
 				}
 				studentDetails.add(studentDetail);
 			}
@@ -103,4 +121,29 @@ public class UserModuleController {
 		}
 		return studentDetails;
 	}
+
+	@PostMapping("saveusermodule")
+	public boolean moduleUser(@RequestParam int userId, String moduleName) {
+		boolean status = false;
+		List<UserModule> userModules = userModuleService.getUserModuleByUserId(userId);
+		for (UserModule module : userModules) {
+			status = userModuleService.deleteUserModuleByUserId(module);
+		}
+
+		String[] moduleNames = moduleName.split(",");
+		for (int i = 0; i < moduleNames.length; i++) {
+			Module module = moduleRepository.findByModuleName(moduleNames[i]);
+			UserModule userModule = new UserModule();
+			userModule.setUserId(userId);
+			userModule.setModuleId(module.getModuleId());
+			Date date = new Date();
+			userModule.setCreatedAt(new Timestamp(date.getTime()));
+			status = userModuleService.saveUserModule(userModule);
+		}
+
+		return status;
+	}
+
+	
+
 }

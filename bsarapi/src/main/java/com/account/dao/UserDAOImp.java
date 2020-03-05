@@ -47,14 +47,12 @@ public class UserDAOImp implements UserDAO {
 
 	@Override
 	public List<User> getUserById(User account) {
-		
-		System.out.println(account.getUserId());
+
 		List<User> list = new ArrayList<User>();
 		User user = accountRepository.findByUserId(account.getUserId());
 		if (user != null) {
 			list.add(user);
 		}
-		System.out.println(list.size());
 		return list;
 	}
 
@@ -90,6 +88,18 @@ public class UserDAOImp implements UserDAO {
 
 	@Override
 	public boolean unlockUser(User account) {
+		boolean status = false;
+		try {
+			accountRepository.save(account);
+			status = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public boolean fingerPrint(User account) {
 		boolean status = false;
 		try {
 			accountRepository.save(account);

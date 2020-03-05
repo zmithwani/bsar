@@ -21,4 +21,7 @@ public interface UserService {
 	public boolean lockUser(User account);
 
 	public boolean unlockUser(User account);
+	
+	public boolean fingerPrint(User account);
+
 }

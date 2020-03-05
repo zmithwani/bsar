@@ -1,19 +1,23 @@
 package com.account.model.dto;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.account.model.Module;
+import com.account.model.ModuleActivity;
+import com.account.model.ModuleSchedule;
 
 public class StudentDTO {
 
 	private int userId;
 	private int moduleId;
-	private int moduleActivityId;
+	private int activityId;
+	private int scheduleId;
 	private String moduleName;
 	private String moduleCode;
 	private String moduleActivity;
 	private Timestamp moduleSchedule;
-	private String attendance;
-
-	
 	
 
 	public int getUserId() {
@@ -48,14 +52,6 @@ public class StudentDTO {
 		this.moduleActivity = moduleActivity;
 	}
 
-	public String getAttendance() {
-		return attendance;
-	}
-
-	public void setAttendance(String attendance) {
-		this.attendance = attendance;
-	}
-
 	public String getModuleCode() {
 		return moduleCode;
 	}
@@ -72,14 +68,21 @@ public class StudentDTO {
 		this.moduleSchedule = moduleSchedule;
 	}
 
-	public int getModuleActivityId() {
-		return moduleActivityId;
+	public int getActivityId() {
+		return activityId;
 	}
 
-	public void setModuleActivityId(int moduleActivityId) {
-		this.moduleActivityId = moduleActivityId;
+	public void setActivityId(int activityId) {
+		this.activityId = activityId;
 	}
 
+	public int getScheduleId() {
+		return scheduleId;
+	}
+
+	public void setScheduleId(int scheduleId) {
+		this.scheduleId = scheduleId;
+	}
 	
 	
 }

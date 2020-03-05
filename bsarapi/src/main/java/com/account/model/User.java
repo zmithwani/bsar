@@ -28,27 +28,36 @@ public class User {
 	@Transient
 	private String roleName;
 	private String locked;
+	private String fingerPrint;
+
 	public Timestamp getCreatedAt() {
 		return createdAt;
 	}
+
 	public Timestamp getUpdatedAt() {
 		return updatedAt;
 	}
+
 	public String getCreatedBy() {
 		return createdBy;
 	}
+
 	public String getUpdatedBy() {
 		return updatedBy;
 	}
+
 	public void setCreatedAt(Timestamp createdAt) {
 		this.createdAt = createdAt;
 	}
+
 	public void setUpdatedAt(Timestamp updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
 	}
+
 	public void setUpdatedBy(String updatedBy) {
 		this.updatedBy = updatedBy;
 	}
@@ -56,15 +65,19 @@ public class User {
 	public int getUserId() {
 		return userId;
 	}
+
 	public String getUsername() {
 		return username;
 	}
+
 	public String getPassword() {
 		return password;
 	}
+
 	public String getEmailAddress() {
 		return emailAddress;
 	}
+
 	public Long getUserTypeId() {
 		return userTypeId;
 	}
@@ -72,31 +85,45 @@ public class User {
 	public String getRoleName() {
 		return roleName;
 	}
+
 	public String getLocked() {
 		return locked;
 	}
+
 	public void setUserId(int userId) {
 		this.userId = userId;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
+
 	public void setUserTypeId(Long userTypeId) {
 		this.userTypeId = userTypeId;
 	}
-	
+
 	public void setRoleName(String roleName) {
 		this.roleName = roleName;
 	}
+
 	public void setLocked(String locked) {
 		this.locked = locked;
 	}
-	
+
+	public String getFingerPrint() {
+		return fingerPrint;
+	}
+
+	public void setFingerPrint(String fingerPrint) {
+		this.fingerPrint = fingerPrint;
+	}
 
 }

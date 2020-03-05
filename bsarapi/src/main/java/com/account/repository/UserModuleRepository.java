@@ -10,4 +10,6 @@ public interface UserModuleRepository extends JpaRepository<UserModule, Long> {
 
 	List<UserModule> findByUserId(int userId);
 
+	List<UserModule> findByModuleId(int moduleId);
+
 }

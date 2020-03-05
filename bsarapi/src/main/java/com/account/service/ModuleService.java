@@ -12,7 +12,7 @@ public interface ModuleService {
 	public boolean saveModuleActivity(ModuleActivity moduleact);
 
 	public boolean saveModuleSchedule(ModuleSchedule module);
-	
+
 	public Module getModuleByName(Module module);
 
 	public ModuleActivity getModuleActivityById(int module);
@@ -20,7 +20,5 @@ public interface ModuleService {
 	public Module getModuleByCode(Module module);
 
 	public Module getModuleByModuleName(String module);
-
-
 
 }

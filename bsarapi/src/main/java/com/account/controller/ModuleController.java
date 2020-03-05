@@ -37,6 +37,7 @@ public class ModuleController {
 	@PostMapping("savemodule")
 	public boolean saveModule(@RequestBody StudentDTO studentDTO) {
 		boolean status = false;
+
 		Module module = new Module();
 		module.setModuleName(studentDTO.getModuleName());
 		module.setModuleCode(studentDTO.getModuleCode());
@@ -67,6 +68,7 @@ public class ModuleController {
 				status = moduleService.saveModuleSchedule(schedule);
 			}
 		}
+
 		return status;
 	}
 

@@ -15,10 +15,24 @@ public class UserModuleServiceImp implements UserModuleService {
 	@Autowired
 	private UserModuleDAO usermoduledao;
 
-	
 	@Override
 	public List<UserModule> getUserModule(UserModule userModule) {
 		return usermoduledao.getUserModule(userModule);
+	}
+
+	@Override
+	public boolean saveUserModule(UserModule userModule) {
+		return usermoduledao.saveUserModule(userModule);
+	}
+
+	@Override
+	public List<UserModule> getUserModuleByUserId(int userId) {
+		return usermoduledao.getUserModuleByUserId(userId);
+	}
+
+	@Override
+	public boolean deleteUserModuleByUserId(UserModule userId) {
+		return usermoduledao.deleteUserModuleByUserId(userId);
 	}
 
 }

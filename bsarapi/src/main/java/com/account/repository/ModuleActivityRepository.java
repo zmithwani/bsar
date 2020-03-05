@@ -13,5 +13,4 @@ public interface ModuleActivityRepository extends JpaRepository<ModuleActivity, 
 
 	ModuleActivity findByModuleActivityId(int moduleActivityId);
 
-
 }

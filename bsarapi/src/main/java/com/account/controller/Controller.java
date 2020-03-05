@@ -186,6 +186,26 @@ public class Controller {
 		return status;
 	}
 
+	@PostMapping("fingerprint/{userid}")
+	public boolean FingerPrint(@RequestBody User account, @PathVariable("userid") int userid) {
+		boolean status = false;
+		
+		User userExist = userRepository.findByUserId(userid);
+		if (userExist != null) {
+			account.setUserId(userid);
+			account.setUsername(userExist.getUsername());
+			account.setPassword(userExist.getPassword());
+			account.setLocked(userExist.getLocked());
+			account.setEmailAddress(userExist.getEmailAddress());
+			account.setUserTypeId(userExist.getUserTypeId());
+			account.setUpdatedAt(new Timestamp(new Date().getTime()));
+			account.setFingerPrint(account.getFingerPrint());
+			status = accountService.fingerPrint(account);
+		}
+
+		return status;
+	}
+
 	private void sendCreateUser(User user) throws Exception {
 
 		ExecutorService emailExecutor = Executors.newCachedThreadPool();
