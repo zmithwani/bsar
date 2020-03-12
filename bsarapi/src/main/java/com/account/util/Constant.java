@@ -6,5 +6,4 @@ public interface Constant {
 	static final String ACTIVE = "ACTIVE";
 	static final String LOCKED = "LOCKED";
 
-	
 }

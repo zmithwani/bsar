@@ -7,10 +7,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.mail.internet.MimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,24 +48,29 @@ public class Controller {
 	@Autowired
 	private UserRepository userRepository;
 
-	@Value("${port}")
-	public String port;
+	@Autowired
+	private JavaMailSender sender;
 
-	@Value("${fromEmail}")
-	public String fromEmail;
-
-	@Value("${password}")
-	public String mailPassword;
-
-	@Value("${host}")
-	public String host;
+	// @Value("${port}")
+	// public String port;
+	//
+	// @Value("${fromEmail}")
+	// public String fromEmail;
+	//
+	// @Value("${password}")
+	// public String mailPassword;
+	//
+	// @Value("${host}")
+	// public String host;
 
 	@PostMapping("login")
 	public User login(@RequestBody User account) {
 		log.info(account.getUsername());
 		log.info(account.getPassword());
+
 		User user = accountService.getUserByName(account);
-		log.info(user.getPassword());
+		// log.info(user.getPassword());
+
 		if (user != null && user.getPassword().trim().equals(account.getPassword().trim()) && user.getLocked() != null
 				&& user.getLocked().trim().equals(Constant.ACTIVE)) {
 			log.info(user.getLocked());
@@ -84,7 +93,7 @@ public class Controller {
 			user.setPassword(password);
 			userRepository.save(user);
 			try {
-				sendEmailReset(user);
+				sendForgotPassword(user);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -106,7 +115,7 @@ public class Controller {
 			Date date = new Date();
 			account.setCreatedAt(new Timestamp(date.getTime()));
 			try {
-				sendCreateUser(account);
+				sendEmail(account);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -141,8 +150,6 @@ public class Controller {
 		User account = new User();
 		account.setUserId(userid);
 		List<User> accounts = accountService.getUserById(account);
-
-		System.out.println(accounts.size());
 		return accounts;
 
 	}
@@ -155,6 +162,7 @@ public class Controller {
 			account.setUserId(userid);
 			account.setPassword(userExist.getPassword());
 			account.setLocked(userExist.getLocked());
+			account.setFingerPrint(userExist.getFingerPrint());
 			account.setUpdatedAt(new Timestamp(new Date().getTime()));
 			status = accountService.updateUser(account);
 		}
@@ -189,7 +197,6 @@ public class Controller {
 	@PostMapping("fingerprint/{userid}")
 	public boolean FingerPrint(@RequestBody User account, @PathVariable("userid") int userid) {
 		boolean status = false;
-		
 		User userExist = userRepository.findByUserId(userid);
 		if (userExist != null) {
 			account.setUserId(userid);
@@ -206,49 +213,74 @@ public class Controller {
 		return status;
 	}
 
-	private void sendCreateUser(User user) throws Exception {
+	@PostMapping("changePassword/{userid}")
+	public boolean ChangePassword(@RequestBody User account, @PathVariable("userid") int userid) {
+		boolean status = false;
 
-		ExecutorService emailExecutor = Executors.newCachedThreadPool();
-		emailExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
+		if (account.getPassword().equals(account.getReEnterPassword())) {
+			User userExist = userRepository.findByUserId(userid);
+			if (userExist != null) {
+
+				account.setUserId(userid);
+				account.setUsername(userExist.getUsername());
+				account.setPassword(account.getPassword());
+				account.setLocked(userExist.getLocked());
+				account.setEmailAddress(userExist.getEmailAddress());
+				account.setUserTypeId(userExist.getUserTypeId());
+				account.setUpdatedAt(new Timestamp(new Date().getTime()));
+				account.setFingerPrint(userExist.getFingerPrint());
+				account.setUpdatedAt(new Timestamp(new Date().getTime()));
 				try {
-
-					String subject = "Account Registration";
-					String body = "Dear " + user.getUsername() + "," + "<br /> <br />"
-							+ "Your username and password are " + user.getUsername() + " and " + user.getPassword()
-							+ "<br /> <br />" + "Thank You";
-					EmailUtil emailUtil = new EmailUtil();
-					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port,
-							subject, body);
+					changePassword(account);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				status = accountService.changePassword(account);
 			}
-		});
+		}
 
+		return status;
 	}
 
-	private void sendEmailReset(User user) throws Exception {
+	private void sendEmail(User user) throws Exception {
+		MimeMessage message = sender.createMimeMessage();
 
-		ExecutorService emailExecutor = Executors.newCachedThreadPool();
-		emailExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-					String subject = "Password reset";
-					String body = "Dear " + user.getUsername() + "," + "<br /> <br />" + "Your password is reset to "
-							+ user.getPassword() + "." + "<br /> <br />" + "Thank You";
-					EmailUtil emailUtil = new EmailUtil();
-					String stat = emailUtil.sendEmail(host, fromEmail, mailPassword, user.getEmailAddress(), port,
-							subject, body);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		// helper.setTo("sivakarthika128@gmail.com");
+		helper.setTo(user.getEmailAddress());
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "Your Password: " + user.getPassword() + "\n\n"
+				+ " Regards" + "\n\n" + " Bsar");
+		helper.setSubject("User Registration");
 
+		sender.send(helper.getMimeMessage());
+	}
+
+	private void sendForgotPassword(User user) throws Exception {
+		MimeMessage message = sender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		// helper.setTo("sivakarthika128@gmail.com");
+		helper.setTo(user.getEmailAddress());
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "Your Password is Reset: " + user.getPassword()
+				+ "\n\n" + " Regards" + "\n\n" + " Bsar");
+		helper.setSubject("Forgot Password");
+
+		sender.send(helper.getMimeMessage());
+	}
+
+	private void changePassword(User user) throws Exception {
+		MimeMessage message = sender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setTo(user.getEmailAddress());
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "Your Password is changed: " + user.getPassword()
+				+ "\n\n" + " Regards" + "\n\n" + " Bsar");
+		helper.setSubject("Password Change");
+
+		sender.send(helper.getMimeMessage());
 	}
 
 }

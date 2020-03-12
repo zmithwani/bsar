@@ -110,4 +110,16 @@ public class UserDAOImp implements UserDAO {
 		return status;
 	}
 
+	@Override
+	public boolean changePassword(User account) {
+		boolean status = false;
+		try {
+			accountRepository.save(account);
+			status = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
 }

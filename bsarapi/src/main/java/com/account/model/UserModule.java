@@ -73,7 +73,5 @@ public class UserModule {
 	public void setModuleId(int moduleId) {
 		this.moduleId = moduleId;
 	}
-	
-	
-}
 
+}

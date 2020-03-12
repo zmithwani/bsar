@@ -18,7 +18,9 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int userId;
 	private String username;
-	String password;
+	private String password;
+	@Transient
+	private String reEnterPassword;
 	private String emailAddress;
 	private Long userTypeId;
 	private Timestamp createdAt;
@@ -124,6 +126,14 @@ public class User {
 
 	public void setFingerPrint(String fingerPrint) {
 		this.fingerPrint = fingerPrint;
+	}
+
+	public String getReEnterPassword() {
+		return reEnterPassword;
+	}
+
+	public void setReEnterPassword(String reEnterPassword) {
+		this.reEnterPassword = reEnterPassword;
 	}
 
 }

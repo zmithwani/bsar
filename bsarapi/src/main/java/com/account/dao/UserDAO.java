@@ -24,4 +24,5 @@ public interface UserDAO {
 	
 	public boolean fingerPrint(User account);
 
+	public boolean changePassword(User account);
 }

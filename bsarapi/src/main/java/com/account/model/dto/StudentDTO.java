@@ -18,7 +18,7 @@ public class StudentDTO {
 	private String moduleCode;
 	private String moduleActivity;
 	private Timestamp moduleSchedule;
-	
+	private String fingerPrint;
 
 	public int getUserId() {
 		return userId;
@@ -83,6 +83,13 @@ public class StudentDTO {
 	public void setScheduleId(int scheduleId) {
 		this.scheduleId = scheduleId;
 	}
-	
-	
+
+	public String getFingerPrint() {
+		return fingerPrint;
+	}
+
+	public void setFingerPrint(String fingerPrint) {
+		this.fingerPrint = fingerPrint;
+	}
+
 }

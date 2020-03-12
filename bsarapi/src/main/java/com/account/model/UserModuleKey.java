@@ -26,5 +26,4 @@ public class UserModuleKey implements Serializable {
 		this.moduleId = moduleId;
 	}
 
-
 }

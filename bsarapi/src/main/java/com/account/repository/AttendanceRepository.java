@@ -8,9 +8,6 @@ import com.account.model.Attendance;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
-
 	List<Attendance> findByModuleActivityId(int moduleActivityId);
-
-	
 
 }

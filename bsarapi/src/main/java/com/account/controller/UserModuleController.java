@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.account.model.Attendance;
 import com.account.model.Module;
 import com.account.model.ModuleActivity;
 import com.account.model.ModuleSchedule;
 import com.account.model.User;
 import com.account.model.UserModule;
 import com.account.model.dto.StudentDTO;
+import com.account.repository.AttendanceRepository;
 import com.account.repository.ModuleActivityRepository;
 import com.account.repository.ModuleRepository;
 import com.account.repository.ModuleScheduleRepository;
@@ -48,6 +50,9 @@ public class UserModuleController {
 
 	@Autowired
 	private ModuleScheduleRepository moduleScheduleRepository;
+
+	@Autowired
+	private AttendanceRepository attenRepository;
 
 	@GetMapping("usermodule/{userid}")
 	public List<StudentDTO> allUserModule(@PathVariable("userid") int userid) {
@@ -78,6 +83,12 @@ public class UserModuleController {
 
 					studentDetail.setModuleSchedule(moduleSchedule.getModuleScheduled());
 					studentDetail.setScheduleId(moduleSchedule.getModuleScheduleId());
+				}
+
+				List<Attendance> attendance = attenRepository
+						.findByModuleActivityId(moduleActivity.getModuleActivityId());
+				for (Attendance atten : attendance) {
+					studentDetail.setFingerPrint(atten.getFingerPrint());
 				}
 				studentDetails.add(studentDetail);
 			}
@@ -143,7 +154,5 @@ public class UserModuleController {
 
 		return status;
 	}
-
-	
 
 }
