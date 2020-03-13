@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.account.model.User;
 import com.account.model.UserType;
+import com.account.model.dto.AttendanceDTO;
 import com.account.repository.UserRepository;
 import com.account.repository.UserTypeRepository;
 import com.account.service.UserService;
@@ -242,6 +243,32 @@ public class Controller {
 		return status;
 	}
 
+	@PostMapping("sendemail")
+	public boolean attendEmail(@RequestBody AttendanceDTO userModule) {
+
+		boolean status = true;
+		
+		System.out.println(userModule.getNonAttended());
+		System.out.println(userModule.getModuleName());
+		System.out.println(userModule.getAssigned());
+
+		String[] userArr = userModule.getNonAttended().split(",");
+		for (String user : userArr) {
+			try {
+				User userFound = userRepository.findByUsername(user);
+				if (userFound != null) {
+					sendEmailAttendance(userFound, userModule.getModuleName(), userModule.getModuleActivity(),
+							userModule.getModuleSchedule());
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return status;
+	}
+
 	private void sendEmail(User user) throws Exception {
 		MimeMessage message = sender.createMimeMessage();
 
@@ -279,6 +306,19 @@ public class Controller {
 		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "Your Password is changed: " + user.getPassword()
 				+ "\n\n" + " Regards" + "\n\n" + " Bsar");
 		helper.setSubject("Password Change");
+
+		sender.send(helper.getMimeMessage());
+	}
+
+	private void sendEmailAttendance(User user, String module, String activity, Date schedule) throws Exception {
+		MimeMessage message = sender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setTo(user.getEmailAddress());
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "You have not attended the activity : " + module
+				+ " " + activity + " on " + schedule + "\n\n" + " Regards" + "\n\n" + " Bsar");
+		helper.setSubject("Non Attendance");
 
 		sender.send(helper.getMimeMessage());
 	}

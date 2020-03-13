@@ -86,7 +86,7 @@ public class UserModuleController {
 				}
 
 				List<Attendance> attendance = attenRepository
-						.findByModuleActivityId(moduleActivity.getModuleActivityId());
+						.findByUserIdAndModuleActivityId(userModule.getUserId(),moduleActivity.getModuleActivityId());
 				for (Attendance atten : attendance) {
 					studentDetail.setFingerPrint(atten.getFingerPrint());
 				}

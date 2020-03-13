@@ -10,4 +10,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	List<Attendance> findByModuleActivityId(int moduleActivityId);
 
+
+	List<Attendance> findByUserIdAndModuleActivityId(int userId, int moduleActivityId);
+
 }

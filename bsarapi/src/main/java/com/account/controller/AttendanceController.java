@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -114,6 +115,9 @@ public class AttendanceController {
 
 			} catch (Exception e) {
 
+				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null && user.getFingerPrint().equals(atten.getFingerPrint())) {
+					status = attenService.saveAttendance(atten);
+				}
 				e.printStackTrace();
 			}
 
@@ -137,6 +141,7 @@ public class AttendanceController {
 
 			List<UserModule> usermodules = userModuleRepository.findByModuleId(userModule.getModuleId());
 
+			String usersAttended = "";
 			String assignedUsers = "";
 			String assignedUser = "";
 			String notAttended = "";
@@ -146,6 +151,7 @@ public class AttendanceController {
 
 				if (user != null && user.getUserTypeId() == 3) {
 					assignedUser = assignedUser + user.getUsername() + ", ";
+
 				}
 
 			}
@@ -159,6 +165,21 @@ public class AttendanceController {
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
 			for (ModuleActivity moduleActivity : moduleActivities) {
+
+				usersAttended = "";
+				List<Attendance> attendances = attenRepository
+						.findByModuleActivityId(moduleActivity.getModuleActivityId());
+				for (Attendance attendance : attendances) {
+					User user = userRepository.findByUserId(attendance.getUserId());
+					if (user.getUserTypeId() == 3) {
+						usersAttended = usersAttended + user.getUsername() + ", ";
+					}
+				}
+				
+				if (usersAttended.length() > 2) {
+					usersAttended = usersAttended.substring(0, usersAttended.length() - 2);
+				}
+
 				AttendanceDTO attenDetail = new AttendanceDTO();
 				attenDetail.setUserId(userModule.getUserId());
 				attenDetail.setModuleId(userModule.getModuleId());
@@ -167,7 +188,19 @@ public class AttendanceController {
 				attenDetail.setModuleActivity(moduleActivity.getModuleActivity());
 				attenDetail.setActivityId(moduleActivity.getModuleActivityId());
 				attenDetail.setAssigned(assignedUsers);
+				String[] assigned = assignedUsers.split(",");
+				notAttended = "";
+				for (String assign : assigned) {
+					if (!usersAttended.contains(assign.trim())) {
+						notAttended = notAttended + assign + ", ";
+					}
+				}
+				if (notAttended.length() > 2) {
+					notAttended = notAttended.substring(0, notAttended.length() - 2);
+				}
 				attenDetail.setNonAttended(notAttended);
+				
+				attenDetail.setAttended(usersAttended);
 
 				boolean scheduleFound = true;
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
@@ -181,12 +214,12 @@ public class AttendanceController {
 					if (fromDate != null && toDate != null && !fromDate.equals("null") && !toDate.equals("null")) {
 						if (scheduleFound && moduleSchedule.getModuleScheduled() != null
 								&& df.parse(fromDate).after(df.parse(new SimpleDateFormat("yyyy-MM-dd")
-										.format(moduleSchedule.getModuleScheduled())))) {
+										.format(zeroTime(moduleSchedule.getModuleScheduled()))))) {
 							scheduleFound = false;
 						}
 						if (scheduleFound && moduleSchedule.getModuleScheduled() != null
 								&& df.parse(toDate).before(df.parse(new SimpleDateFormat("yyyy-MM-dd")
-										.format(moduleSchedule.getModuleScheduled())))) {
+										.format(zeroTime(moduleSchedule.getModuleScheduled()))))) {
 							scheduleFound = false;
 						}
 					}
@@ -199,5 +232,18 @@ public class AttendanceController {
 			}
 		}
 		return attenDetails;
+	}
+
+	public Date zeroTime(final Date date) {
+		SimpleDateFormat ft = new SimpleDateFormat("yyyy-Mm-dd HH:mm:ss");
+		// not SimpleDateFormat("dd-MM-yyyy hh:mm:ss")
+		Calendar calendarDM = Calendar.getInstance();
+		calendarDM.setTime(date);
+		calendarDM.set(Calendar.HOUR, 0);
+		calendarDM.set(Calendar.MINUTE, 0);
+		calendarDM.set(Calendar.SECOND, 0);
+		System.out.println("Current Date: " + ft.format(calendarDM.getTime()));
+		return calendarDM.getTime();
+
 	}
 }
