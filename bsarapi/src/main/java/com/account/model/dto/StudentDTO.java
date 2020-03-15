@@ -17,7 +17,15 @@ public class StudentDTO {
 	private String moduleName;
 	private String moduleCode;
 	private String moduleActivity;
+	private String moduleActivityOne;
+
 	private Timestamp moduleSchedule;
+	private int moduleFrequency;
+	private String moduleTimeOne;
+	private String moduleTimeTwo;
+	private String moduleTimeThree;
+	private String moduleTimeFour;
+	private String moduleTimeFive;
 	private String fingerPrint;
 
 	public int getUserId() {
@@ -70,6 +78,62 @@ public class StudentDTO {
 
 	public int getActivityId() {
 		return activityId;
+	}
+
+	public String getModuleActivityOne() {
+		return moduleActivityOne;
+	}
+
+	public int getModuleFrequency() {
+		return moduleFrequency;
+	}
+
+	public String getModuleTimeOne() {
+		return moduleTimeOne;
+	}
+
+	public String getModuleTimeTwo() {
+		return moduleTimeTwo;
+	}
+
+	public String getModuleTimeThree() {
+		return moduleTimeThree;
+	}
+
+	public String getModuleTimeFour() {
+		return moduleTimeFour;
+	}
+
+	public String getModuleTimeFive() {
+		return moduleTimeFive;
+	}
+
+	public void setModuleActivityOne(String moduleActivityOne) {
+		this.moduleActivityOne = moduleActivityOne;
+	}
+
+	public void setModuleFrequency(int moduleFrequency) {
+		this.moduleFrequency = moduleFrequency;
+	}
+
+	public void setModuleTimeOne(String moduleTimeOne) {
+		this.moduleTimeOne = moduleTimeOne;
+	}
+
+	public void setModuleTimeTwo(String moduleTimeTwo) {
+		this.moduleTimeTwo = moduleTimeTwo;
+	}
+
+	public void setModuleTimeThree(String moduleTimeThree) {
+		this.moduleTimeThree = moduleTimeThree;
+	}
+
+	public void setModuleTimeFour(String moduleTimeFour) {
+		this.moduleTimeFour = moduleTimeFour;
+	}
+
+	public void setModuleTimeFive(String moduleTimeFive) {
+		this.moduleTimeFive = moduleTimeFive;
 	}
 
 	public void setActivityId(int activityId) {

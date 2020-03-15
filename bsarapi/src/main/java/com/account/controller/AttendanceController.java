@@ -5,14 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -115,7 +119,8 @@ public class AttendanceController {
 
 			} catch (Exception e) {
 
-				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null && user.getFingerPrint().equals(atten.getFingerPrint())) {
+				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null
+						&& user.getFingerPrint().equals(atten.getFingerPrint())) {
 					status = attenService.saveAttendance(atten);
 				}
 				e.printStackTrace();
@@ -126,13 +131,15 @@ public class AttendanceController {
 		return status;
 	}
 
-	@GetMapping("stuatten/{userid}/{fromDate}/{toDate}")
+	@GetMapping("stuatten/{userid}/{fromDate}/{toDate}/{percentage}")
 	public List<AttendanceDTO> attendance(@PathVariable("userid") int userid, @PathVariable("fromDate") String fromDate,
-			@PathVariable("toDate") String toDate) throws ParseException {
+			@PathVariable("toDate") String toDate, @PathVariable("percentage") int percentage) throws ParseException {
 
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		DecimalFormat df2 = new DecimalFormat("#.##");
 		UserModule usModule = new UserModule();
 		usModule.setUserId(userid);
+		Integer totalActivities = 0;
 
 		List<AttendanceDTO> attenDetails = new ArrayList<AttendanceDTO>();
 
@@ -164,6 +171,7 @@ public class AttendanceController {
 			Module module = moduleRepository.findByModuleId(userModule.getModuleId());
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
+
 			for (ModuleActivity moduleActivity : moduleActivities) {
 
 				usersAttended = "";
@@ -175,19 +183,12 @@ public class AttendanceController {
 						usersAttended = usersAttended + user.getUsername() + ", ";
 					}
 				}
-				
+
 				if (usersAttended.length() > 2) {
 					usersAttended = usersAttended.substring(0, usersAttended.length() - 2);
 				}
 
-				AttendanceDTO attenDetail = new AttendanceDTO();
-				attenDetail.setUserId(userModule.getUserId());
-				attenDetail.setModuleId(userModule.getModuleId());
-				attenDetail.setModuleName(module.getModuleName());
-				attenDetail.setModuleCode(module.getModuleCode());
-				attenDetail.setModuleActivity(moduleActivity.getModuleActivity());
-				attenDetail.setActivityId(moduleActivity.getModuleActivityId());
-				attenDetail.setAssigned(assignedUsers);
+				
 				String[] assigned = assignedUsers.split(",");
 				notAttended = "";
 				for (String assign : assigned) {
@@ -198,9 +199,7 @@ public class AttendanceController {
 				if (notAttended.length() > 2) {
 					notAttended = notAttended.substring(0, notAttended.length() - 2);
 				}
-				attenDetail.setNonAttended(notAttended);
 				
-				attenDetail.setAttended(usersAttended);
 
 				boolean scheduleFound = true;
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
@@ -211,6 +210,7 @@ public class AttendanceController {
 				}
 				for (ModuleSchedule moduleSchedule : moduleSchedules) {
 
+					scheduleFound = true;
 					if (fromDate != null && toDate != null && !fromDate.equals("null") && !toDate.equals("null")) {
 						if (scheduleFound && moduleSchedule.getModuleScheduled() != null
 								&& df.parse(fromDate).after(df.parse(new SimpleDateFormat("yyyy-MM-dd")
@@ -223,13 +223,77 @@ public class AttendanceController {
 							scheduleFound = false;
 						}
 					}
+					
+					AttendanceDTO attenDetail = new AttendanceDTO();
+					attenDetail.setUserId(userModule.getUserId());
+					attenDetail.setModuleId(userModule.getModuleId());
+					attenDetail.setModuleName(module.getModuleName());
+					attenDetail.setModuleCode(module.getModuleCode());
+					attenDetail.setModuleActivity(moduleActivity.getModuleActivity());
+					attenDetail.setActivityId(moduleActivity.getModuleActivityId());
+					attenDetail.setNonAttended(notAttended);
+
+					attenDetail.setAttended(usersAttended);
+					attenDetail.setAssigned(assignedUsers);
 					attenDetail.setModuleSchedule(moduleSchedule.getModuleScheduled());
 					attenDetail.setScheduleId(moduleSchedule.getModuleScheduleId());
+					if (scheduleFound) {
+						attenDetails.add(attenDetail);
+					}
 				}
-				if (scheduleFound) {
-					attenDetails.add(attenDetail);
-				}
+				
 			}
+		}
+		
+		
+		totalActivities = attenDetails.size();
+		HashMap<String, Integer> map = new HashMap<String, Integer>();
+		for (AttendanceDTO attendanceDto : attenDetails) {
+			String[] nonAttend = attendanceDto.getNonAttended().split(",");
+			for (String assign : nonAttend) {
+				int count = 1;
+				if (map.get(assign.trim()) != null) {
+					count = map.get(assign.trim()) + 1;
+				}
+				map.put(assign.trim(), count);
+			}
+		}
+		Integer[] arr = new Integer[map.size()];
+		String belowPercent = "";
+		String belowList = "";
+		Iterator it = map.entrySet().iterator();
+		int i = 0;
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+
+	//		System.out.println(pair.getKey());
+	//		System.out.println(pair.getValue());
+	//		System.out.println(totalActivities);
+	//		System.out.println(totalActivities - (Integer) pair.getValue());
+	//		System.out.println((double) (totalActivities - (Integer) pair.getValue()) / totalActivities);
+			Double perc = (double) (totalActivities - (Integer) pair.getValue()) / totalActivities * 100;
+			if (perc < percentage) {
+				belowPercent = belowPercent + "" + (String) pair.getKey();
+				belowPercent = belowPercent + "("
+						+ (df2.format(((double) (totalActivities - (Integer) pair.getValue()) / totalActivities) * 100)) + " %)"
+						+ ", ";
+				belowList = belowList + "" + (String) pair.getKey() + ", ";
+			}
+			i++;
+		}
+		if (belowList.length() > 2) {
+			belowList = belowList.substring(0, belowList.length() - 2);
+		}
+		if (belowPercent.length() > 2) {
+			belowPercent = belowPercent.substring(0, belowPercent.length() - 2);
+		}
+		i = 0;
+		for (AttendanceDTO attendanceDto : attenDetails) {
+			if ( i == 0) {
+				attendanceDto.setBelowPercent(belowPercent);
+				attendanceDto.setBelowList(belowList);
+			}
+			i++;
 		}
 		return attenDetails;
 	}
@@ -242,7 +306,6 @@ public class AttendanceController {
 		calendarDM.set(Calendar.HOUR, 0);
 		calendarDM.set(Calendar.MINUTE, 0);
 		calendarDM.set(Calendar.SECOND, 0);
-		System.out.println("Current Date: " + ft.format(calendarDM.getTime()));
 		return calendarDM.getTime();
 
 	}

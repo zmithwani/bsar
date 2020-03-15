@@ -2,6 +2,7 @@ package com.account.controller;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -53,23 +54,94 @@ public class ModuleController {
 		Module moduleNames = moduleService.getModuleByModuleName(module.getModuleName());
 
 		if (moduleNames != null) {
-			ModuleActivity activity = new ModuleActivity();
-			activity.setModuleId(moduleNames.getModuleId());
-			activity.setModuleActivity(studentDTO.getModuleActivity());
-			activity.setCreatedAt(new Timestamp(date.getTime()));
-			status = moduleService.saveModuleActivity(activity);
+			if (studentDTO.getModuleActivity() != null && !studentDTO.getModuleActivity().equals("")) {
+				ModuleActivity activity = new ModuleActivity();
+				activity.setModuleId(moduleNames.getModuleId());
+				activity.setModuleActivity(studentDTO.getModuleActivity());
+				activity.setCreatedAt(new Timestamp(date.getTime()));
+				status = moduleService.saveModuleActivity(activity);
 
-			ModuleActivity moduleActivityId = moduleService.getModuleActivityById(activity.getModuleActivityId());
-			if (moduleActivityId != null) {
-				ModuleSchedule schedule = new ModuleSchedule();
-				schedule.setModuleActivityId(moduleActivityId.getModuleActivityId());
-				schedule.setModuleScheduled(studentDTO.getModuleSchedule());
-				schedule.setCreatedAt(new Timestamp(date.getTime()));
-				status = moduleService.saveModuleSchedule(schedule);
+				ModuleActivity moduleActivityId = moduleService.getModuleActivityById(activity.getModuleActivityId());
+				if (moduleActivityId != null) {
+
+					if (studentDTO.getModuleFrequency() > 0) {
+				//		System.out.println(studentDTO.getModuleFrequency());
+						for (int i = 0; i < 12; i++) {
+							Date stDate = addDays(studentDTO.getModuleFrequency() * 7 * i,
+									studentDTO.getModuleSchedule());
+							ModuleSchedule schedule = new ModuleSchedule();
+							schedule.setModuleActivityId(moduleActivityId.getModuleActivityId());
+							// schedule.setModuleScheduled(studentDTO.getModuleSchedule());
+							schedule.setModuleScheduled(new Timestamp(stDate.getTime()));
+							schedule.setCreatedAt(new Timestamp(date.getTime()));
+							status = moduleService.saveModuleSchedule(schedule);
+						}
+					} else {
+						ModuleSchedule schedule = new ModuleSchedule();
+						schedule.setModuleActivityId(moduleActivityId.getModuleActivityId());
+						schedule.setModuleScheduled(studentDTO.getModuleSchedule());
+						schedule.setCreatedAt(new Timestamp(date.getTime()));
+						status = moduleService.saveModuleSchedule(schedule);
+					}
+				}
+			}
+			if (studentDTO.getModuleActivityOne() != null && !studentDTO.getModuleActivityOne().equals("")) {
+				ModuleActivity activity = new ModuleActivity();
+				activity.setModuleId(moduleNames.getModuleId());
+				activity.setModuleActivity(studentDTO.getModuleActivityOne());
+				activity.setCreatedAt(new Timestamp(date.getTime()));
+				status = moduleService.saveModuleActivity(activity);
+
+				ModuleActivity moduleActivityId = moduleService.getModuleActivityById(activity.getModuleActivityId());
+				if (moduleActivityId != null) {
+
+					if (studentDTO.getModuleFrequency() > 0) {
+				//		System.out.println(studentDTO.getModuleFrequency());
+						for (int i = 0; i < 12; i++) {
+							Date stDate = addDays(studentDTO.getModuleFrequency() * 7 * i,
+									studentDTO.getModuleSchedule());
+							ModuleSchedule schedule = new ModuleSchedule();
+							schedule.setModuleActivityId(moduleActivityId.getModuleActivityId());
+							// schedule.setModuleScheduled(studentDTO.getModuleSchedule());
+							schedule.setModuleScheduled(new Timestamp(stDate.getTime()));
+							schedule.setTimeOne(studentDTO.getModuleTimeOne());
+							schedule.setTimeTwo(studentDTO.getModuleTimeTwo());
+							schedule.setTimeThree(studentDTO.getModuleTimeThree());
+							schedule.setTimeFour(studentDTO.getModuleTimeFour());
+							schedule.setTimeFive(studentDTO.getModuleTimeFive());
+							schedule.setCreatedAt(new Timestamp(date.getTime()));
+							status = moduleService.saveModuleSchedule(schedule);
+						}
+					} else {
+						ModuleSchedule schedule = new ModuleSchedule();
+						schedule.setModuleActivityId(moduleActivityId.getModuleActivityId());
+						schedule.setModuleScheduled(studentDTO.getModuleSchedule());
+						schedule.setCreatedAt(new Timestamp(date.getTime()));
+						status = moduleService.saveModuleSchedule(schedule);
+					}
+				}
 			}
 		}
 
 		return status;
+	}
+
+	private Date addDays(int days, Date date) {
+
+		Date currentDate = date;
+
+		// convert date to calendar
+		Calendar c = Calendar.getInstance();
+		c.setTime(currentDate);
+
+		// manipulate date
+		c.add(Calendar.DATE, days);
+
+		// convert calendar to date
+		Date updateDate = c.getTime();
+
+		return updateDate;
+
 	}
 
 }

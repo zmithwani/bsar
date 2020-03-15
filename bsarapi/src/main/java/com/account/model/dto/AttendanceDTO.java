@@ -15,15 +15,36 @@ public class AttendanceDTO {
 	private String assigned;
 	private String attended;
 	private String nonAttended;
+	private String belowPercent;
+	private String belowList;
 	private Timestamp fromDate;
 	private Timestamp toDate;
+	private int percentage;
 	
 	
+	public int getPercentage() {
+		return percentage;
+	}
+	public void setPercentage(int percentage) {
+		this.percentage = percentage;
+	}
 	public int getUserId() {
 		return userId;
 	}
 	public void setUserId(int userId) {
 		this.userId = userId;
+	}
+	public String getBelowList() {
+		return belowList;
+	}
+	public void setBelowList(String belowList) {
+		this.belowList = belowList;
+	}
+	public String getBelowPercent() {
+		return belowPercent;
+	}
+	public void setBelowPercent(String belowPercent) {
+		this.belowPercent = belowPercent;
 	}
 	public int getModuleId() {
 		return moduleId;

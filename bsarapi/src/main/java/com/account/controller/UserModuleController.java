@@ -68,29 +68,32 @@ public class UserModuleController {
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
 			for (ModuleActivity moduleActivity : moduleActivities) {
-				StudentDTO studentDetail = new StudentDTO();
-				studentDetail.setUserId(userModule.getUserId());
-				studentDetail.setModuleId(userModule.getModuleId());
-				studentDetail.setModuleName(module.getModuleName());
-				studentDetail.setModuleCode(module.getModuleCode());
-				studentDetail.setModuleActivity(moduleActivity.getModuleActivity());
-				studentDetail.setActivityId(moduleActivity.getModuleActivityId());
-
+				
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
 						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
 
 				for (ModuleSchedule moduleSchedule : moduleSchedules) {
 
+					StudentDTO studentDetail = new StudentDTO();
+					studentDetail.setUserId(userModule.getUserId());
+					studentDetail.setModuleId(userModule.getModuleId());
+					studentDetail.setModuleName(module.getModuleName());
+					studentDetail.setModuleCode(module.getModuleCode());
+					studentDetail.setModuleActivity(moduleActivity.getModuleActivity());
+					studentDetail.setActivityId(moduleActivity.getModuleActivityId());
+					
+					
 					studentDetail.setModuleSchedule(moduleSchedule.getModuleScheduled());
 					studentDetail.setScheduleId(moduleSchedule.getModuleScheduleId());
-				}
-
-				List<Attendance> attendance = attenRepository
-						.findByUserIdAndModuleActivityId(userModule.getUserId(),moduleActivity.getModuleActivityId());
-				for (Attendance atten : attendance) {
-					studentDetail.setFingerPrint(atten.getFingerPrint());
-				}
-				studentDetails.add(studentDetail);
+					
+					List<Attendance> attendance = attenRepository
+							.findByUserIdAndModuleActivityIdAndModuleScheduleId(userModule.getUserId(),moduleActivity.getModuleActivityId(),moduleSchedule.getModuleScheduleId());
+					for (Attendance atten : attendance) {
+						studentDetail.setFingerPrint(atten.getFingerPrint());
+					}
+					studentDetails.add(studentDetail);
+				}	
+				
 			}
 
 		}

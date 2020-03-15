@@ -1,6 +1,7 @@
 package com.account.controller;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -243,22 +244,19 @@ public class Controller {
 		return status;
 	}
 
-	@PostMapping("sendemail")
-	public boolean attendEmail(@RequestBody AttendanceDTO userModule) {
-
+	@GetMapping("sendemail/{users}/{moduleName}")
+	public boolean attendEmail(@PathVariable("users") String users, @PathVariable("moduleName") String moduleName) {
 		boolean status = true;
-		
-		System.out.println(userModule.getNonAttended());
-		System.out.println(userModule.getModuleName());
-		System.out.println(userModule.getAssigned());
 
-		String[] userArr = userModule.getNonAttended().split(",");
+	//	System.out.println(users);
+	//	System.out.println(moduleName);
+
+		String[] userArr = users.split(",");
 		for (String user : userArr) {
 			try {
-				User userFound = userRepository.findByUsername(user);
+				User userFound = userRepository.findByUsername(user.trim());
 				if (userFound != null) {
-					sendEmailAttendance(userFound, userModule.getModuleName(), userModule.getModuleActivity(),
-							userModule.getModuleSchedule());
+					sendEmailAttendance(userFound, moduleName);
 				}
 
 			} catch (Exception e) {
@@ -310,14 +308,14 @@ public class Controller {
 		sender.send(helper.getMimeMessage());
 	}
 
-	private void sendEmailAttendance(User user, String module, String activity, Date schedule) throws Exception {
+	private void sendEmailAttendance(User user, String module) throws Exception {
 		MimeMessage message = sender.createMimeMessage();
 
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 		helper.setTo(user.getEmailAddress());
-		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "You have not attended the activity : " + module
-				+ " " + activity + " on " + schedule + "\n\n" + " Regards" + "\n\n" + " Bsar");
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "You have not attended the activities of the : "
+				+ module + "\n\n" + " Regards" + "\n\n" + " Bsar");
 		helper.setSubject("Non Attendance");
 
 		sender.send(helper.getMimeMessage());
