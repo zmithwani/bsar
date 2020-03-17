@@ -1,6 +1,10 @@
 package com.account.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -19,6 +23,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ThreadLocalRandom;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,42 +95,61 @@ public class AttendanceController {
 
 	@PostMapping("saveattendance")
 	public boolean saveAccount(@RequestBody Attendance atten) {
+
 		boolean status = false;
 
-		System.out.println(atten.getFingerPrint());
+		try {
+			List<User> users = userRepository.findAll();
 
-		User user = userRepository.findByUserId(atten.getUserId());
+			for (User user : users) {
 
-		if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null) {
+				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null) {
 
-			byte[] probeImage;
-			try {
-				probeImage = user.getFingerPrint().getBytes();
+					String img1 = "probe." + saveImage(user.getFingerPrint(), "C:/Users/devi/Downloads/probe.");
 
-				byte[] candidateImage = atten.getFingerPrint().getBytes();
+					String img2 = "candidate."
+							+ saveImage(atten.getFingerPrint(), "C:/Users/devi/Downloads/candidate.");
 
-				FingerprintTemplate probe = new FingerprintTemplate(new FingerprintImage().dpi(500).decode(probeImage));
+					saveImage(user.getFingerPrint(), "C:/Users/devi/Downloads/probe.");
+					FingerprintTemplate probe = new FingerprintTemplate(new FingerprintImage().dpi(500)
+							.decode(Files.readAllBytes(Paths.get("C:/Users/devi/Downloads/" + img1))));
+					FingerprintTemplate candidate = new FingerprintTemplate(new FingerprintImage().dpi(500)
+							.decode(Files.readAllBytes(Paths.get("C:/Users/devi/Downloads/" + img2))));
 
-				FingerprintTemplate candidate = new FingerprintTemplate(
-						new FingerprintImage().dpi(500).decode(candidateImage));
+					double score = new FingerprintMatcher().index(probe).match(candidate);
 
-				double score = new FingerprintMatcher().index(probe).match(candidate);
+					double threshold = 40;
+					boolean matches = score >= threshold;
 
-				double threshold = 40;
-				boolean matches = score >= threshold;
+					System.out.println(matches);
 
-				if (matches) {
-					status = attenService.saveAttendance(atten);
+					if (matches) {
+
+						List<Attendance> attendances = attenRepository
+								.findByUserIdAndModuleIdAndModuleActivityIdAndModuleScheduleId(user.getUserId(),
+										atten.getModuleId(), atten.getModuleActivityId(), atten.getModuleScheduleId());
+						
+						
+						if (attendances.isEmpty()) {
+							atten.setUserId(user.getUserId());
+							status = attenService.saveAttendance(atten);
+
+						} else {
+
+							status = true;
+						}
+						break;
+
+					} else {
+						status = false;
+					}
+
 				}
-
-			} catch (Exception e) {
-
-				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null
-						&& user.getFingerPrint().equals(atten.getFingerPrint())) {
-					status = attenService.saveAttendance(atten);
-				}
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+
+			// status = attenService.saveAttendance(atten);
+			e.printStackTrace();
 
 		}
 
@@ -171,36 +196,12 @@ public class AttendanceController {
 			Module module = moduleRepository.findByModuleId(userModule.getModuleId());
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
+			
+			
 
 			for (ModuleActivity moduleActivity : moduleActivities) {
 
-				usersAttended = "";
-				List<Attendance> attendances = attenRepository
-						.findByModuleActivityId(moduleActivity.getModuleActivityId());
-				for (Attendance attendance : attendances) {
-					User user = userRepository.findByUserId(attendance.getUserId());
-					if (user.getUserTypeId() == 3) {
-						usersAttended = usersAttended + user.getUsername() + ", ";
-					}
-				}
-
-				if (usersAttended.length() > 2) {
-					usersAttended = usersAttended.substring(0, usersAttended.length() - 2);
-				}
-
 				
-				String[] assigned = assignedUsers.split(",");
-				notAttended = "";
-				for (String assign : assigned) {
-					if (!usersAttended.contains(assign.trim())) {
-						notAttended = notAttended + assign + ", ";
-					}
-				}
-				if (notAttended.length() > 2) {
-					notAttended = notAttended.substring(0, notAttended.length() - 2);
-				}
-				
-
 				boolean scheduleFound = true;
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
 						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
@@ -209,6 +210,32 @@ public class AttendanceController {
 					scheduleFound = false;
 				}
 				for (ModuleSchedule moduleSchedule : moduleSchedules) {
+					
+					usersAttended = "";
+					List<Attendance> attendances = attenRepository
+							.findByModuleActivityIdAndModuleScheduleId(moduleActivity.getModuleActivityId(),moduleSchedule.getModuleScheduleId());
+					for (Attendance attendance : attendances) {
+						User user = userRepository.findByUserId(attendance.getUserId());
+						if (user.getUserTypeId() == 3) {
+							usersAttended = usersAttended + user.getUsername() + ", ";
+						}
+					}
+
+					if (usersAttended.length() > 2) {
+						usersAttended = usersAttended.substring(0, usersAttended.length() - 2);
+					}
+
+					String[] assigned = assignedUsers.split(",");
+					notAttended = "";
+					for (String assign : assigned) {
+						if (!usersAttended.contains(assign.trim())) {
+							notAttended = notAttended + assign + ", ";
+						}
+					}
+					if (notAttended.length() > 2) {
+						notAttended = notAttended.substring(0, notAttended.length() - 2);
+					}
+
 
 					scheduleFound = true;
 					if (fromDate != null && toDate != null && !fromDate.equals("null") && !toDate.equals("null")) {
@@ -223,7 +250,7 @@ public class AttendanceController {
 							scheduleFound = false;
 						}
 					}
-					
+
 					AttendanceDTO attenDetail = new AttendanceDTO();
 					attenDetail.setUserId(userModule.getUserId());
 					attenDetail.setModuleId(userModule.getModuleId());
@@ -241,11 +268,10 @@ public class AttendanceController {
 						attenDetails.add(attenDetail);
 					}
 				}
-				
+
 			}
 		}
-		
-		
+
 		totalActivities = attenDetails.size();
 		HashMap<String, Integer> map = new HashMap<String, Integer>();
 		for (AttendanceDTO attendanceDto : attenDetails) {
@@ -266,17 +292,18 @@ public class AttendanceController {
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 
-	//		System.out.println(pair.getKey());
-	//		System.out.println(pair.getValue());
-	//		System.out.println(totalActivities);
-	//		System.out.println(totalActivities - (Integer) pair.getValue());
-	//		System.out.println((double) (totalActivities - (Integer) pair.getValue()) / totalActivities);
+//			 System.out.println(pair.getKey());
+//			 System.out.println(pair.getValue());
+//			 System.out.println(totalActivities);
+//			 System.out.println(totalActivities - (Integer) pair.getValue());
+//			 System.out.println((double) (totalActivities - (Integer)
+//			 pair.getValue()) / totalActivities);
 			Double perc = (double) (totalActivities - (Integer) pair.getValue()) / totalActivities * 100;
 			if (perc < percentage) {
 				belowPercent = belowPercent + "" + (String) pair.getKey();
 				belowPercent = belowPercent + "("
-						+ (df2.format(((double) (totalActivities - (Integer) pair.getValue()) / totalActivities) * 100)) + " %)"
-						+ ", ";
+						+ (df2.format(((double) (totalActivities - (Integer) pair.getValue()) / totalActivities) * 100))
+						+ " %)" + ", ";
 				belowList = belowList + "" + (String) pair.getKey() + ", ";
 			}
 			i++;
@@ -289,7 +316,7 @@ public class AttendanceController {
 		}
 		i = 0;
 		for (AttendanceDTO attendanceDto : attenDetails) {
-			if ( i == 0) {
+			if (i == 0) {
 				attendanceDto.setBelowPercent(belowPercent);
 				attendanceDto.setBelowList(belowList);
 			}
@@ -309,4 +336,32 @@ public class AttendanceController {
 		return calendarDM.getTime();
 
 	}
+
+	public String saveImage(String base, String filePath) {
+		String base64String = base;
+		String[] strings = base64String.split(",");
+		String extension;
+		switch (strings[0]) {// check image's extension
+		case "data:image/jpeg;base64":
+			extension = "jpeg";
+			break;
+		case "data:image/png;base64":
+			extension = "png";
+			break;
+		default:// should write cases for more images types
+			extension = "jpg";
+			break;
+		}
+		// convert base64 string to binary data
+		byte[] data = DatatypeConverter.parseBase64Binary(strings[1]);
+		String path = filePath + extension;
+		File file = new File(path);
+		try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+			outputStream.write(data);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return extension;
+	}
+
 }

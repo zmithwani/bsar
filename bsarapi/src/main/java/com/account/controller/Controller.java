@@ -248,9 +248,6 @@ public class Controller {
 	public boolean attendEmail(@PathVariable("users") String users, @PathVariable("moduleName") String moduleName) {
 		boolean status = true;
 
-	//	System.out.println(users);
-	//	System.out.println(moduleName);
-
 		String[] userArr = users.split(",");
 		for (String user : userArr) {
 			try {
@@ -271,8 +268,6 @@ public class Controller {
 		MimeMessage message = sender.createMimeMessage();
 
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-		// helper.setTo("sivakarthika128@gmail.com");
 		helper.setTo(user.getEmailAddress());
 		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "Your Password: " + user.getPassword() + "\n\n"
 				+ " Regards" + "\n\n" + " Bsar");
