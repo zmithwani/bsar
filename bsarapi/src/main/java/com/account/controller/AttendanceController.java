@@ -104,17 +104,24 @@ public class AttendanceController {
 			for (User user : users) {
 
 				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null) {
+					
+					
+					String path = System.getProperty("java.io.tmpdir");
+					
+					System.out.println(path);
 
-					String img1 = "probe." + saveImage(user.getFingerPrint(), "C:/Users/devi/Downloads/probe.");
+					String img1 = user.getUsername() + "probe." + saveImage(user.getFingerPrint(), path + user.getUsername()+ "probe.");
 
-					String img2 = "candidate."
-							+ saveImage(atten.getFingerPrint(), "C:/Users/devi/Downloads/candidate.");
+					String img2 =  user.getUsername() + "candidate."
+							+ saveImage(atten.getFingerPrint(), path + user.getUsername() + "candidate.");
+					
 
-					saveImage(user.getFingerPrint(), "C:/Users/devi/Downloads/probe.");
 					FingerprintTemplate probe = new FingerprintTemplate(new FingerprintImage().dpi(500)
-							.decode(Files.readAllBytes(Paths.get("C:/Users/devi/Downloads/" + img1))));
+							.decode(Files.readAllBytes(Paths.get(path + img1))));
+					
 					FingerprintTemplate candidate = new FingerprintTemplate(new FingerprintImage().dpi(500)
-							.decode(Files.readAllBytes(Paths.get("C:/Users/devi/Downloads/" + img2))));
+							.decode(Files.readAllBytes(Paths.get(path + img2))));
+					
 
 					double score = new FingerprintMatcher().index(probe).match(candidate);
 
