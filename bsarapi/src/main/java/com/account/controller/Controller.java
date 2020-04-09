@@ -250,14 +250,19 @@ public class Controller {
 
 		String[] userArr = users.split(",");
 		for (String user : userArr) {
-			try {
-				User userFound = userRepository.findByUsername(user.trim());
-				if (userFound != null) {
-					sendEmailAttendance(userFound, moduleName);
-				}
+			String[] userArr1 = user.split("-");
+			if (userArr1.length > 0) {
+				try {
+					System.out.println(userArr1[0].trim());
+					User userFound = userRepository.findByUsername(userArr1[0].trim());
+					if (userFound != null && userArr1.length > 1) {
+						System.out.println(userArr1[1].substring(userArr1[1].indexOf("(") + 1, userArr1[1].indexOf(")")));
+						sendEmailAttendance(userFound, moduleName, userArr1[1].substring(userArr1[1].indexOf("(") + 1, userArr1[1].indexOf(")")));
+					}
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -303,13 +308,13 @@ public class Controller {
 		sender.send(helper.getMimeMessage());
 	}
 
-	private void sendEmailAttendance(User user, String module) throws Exception {
+	private void sendEmailAttendance(User user, String module, String percent) throws Exception {
 		MimeMessage message = sender.createMimeMessage();
 
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 		helper.setTo(user.getEmailAddress());
-		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "You have not attended the activities of the : "
+		helper.setText("Dear " + user.getUsername() + "," + "\n\n" + "You have attended only " + percent + " % of the activities of the module : "
 				+ module + "\n\n" + " Regards" + "\n\n" + " Bsar");
 		helper.setSubject("Non Attendance");
 
