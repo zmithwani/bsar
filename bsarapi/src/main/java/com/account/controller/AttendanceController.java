@@ -7,22 +7,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.concurrent.ThreadLocalRandom;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -43,9 +38,7 @@ import com.account.model.ModuleActivity;
 import com.account.model.ModuleSchedule;
 import com.account.model.User;
 import com.account.model.UserModule;
-import com.account.model.UserType;
 import com.account.model.dto.AttendanceDTO;
-import com.account.model.dto.StudentDTO;
 import com.account.repository.AttendanceRepository;
 import com.account.repository.ModuleActivityRepository;
 import com.account.repository.ModuleRepository;
@@ -104,24 +97,22 @@ public class AttendanceController {
 			for (User user : users) {
 
 				if (user != null && user.getFingerPrint() != null && atten.getFingerPrint() != null) {
-					
-					
+
 					String path = System.getProperty("java.io.tmpdir");
-					
+
 					System.out.println(path);
 
-					String img1 = user.getUsername() + "probe." + saveImage(user.getFingerPrint(), path + user.getUsername()+ "probe.");
+					String img1 = user.getUsername() + "probe."
+							+ saveImage(user.getFingerPrint(), path + user.getUsername() + "probe.");
 
-					String img2 =  user.getUsername() + "candidate."
+					String img2 = user.getUsername() + "candidate."
 							+ saveImage(atten.getFingerPrint(), path + user.getUsername() + "candidate.");
-					
 
-					FingerprintTemplate probe = new FingerprintTemplate(new FingerprintImage().dpi(500)
-							.decode(Files.readAllBytes(Paths.get(path + img1))));
-					
-					FingerprintTemplate candidate = new FingerprintTemplate(new FingerprintImage().dpi(500)
-							.decode(Files.readAllBytes(Paths.get(path + img2))));
-					
+					FingerprintTemplate probe = new FingerprintTemplate(
+							new FingerprintImage().dpi(500).decode(Files.readAllBytes(Paths.get(path + img1))));
+
+					FingerprintTemplate candidate = new FingerprintTemplate(
+							new FingerprintImage().dpi(500).decode(Files.readAllBytes(Paths.get(path + img2))));
 
 					double score = new FingerprintMatcher().index(probe).match(candidate);
 
@@ -135,8 +126,7 @@ public class AttendanceController {
 						List<Attendance> attendances = attenRepository
 								.findByUserIdAndModuleIdAndModuleActivityIdAndModuleScheduleId(user.getUserId(),
 										atten.getModuleId(), atten.getModuleActivityId(), atten.getModuleScheduleId());
-						
-						
+
 						if (attendances.isEmpty()) {
 							atten.setUserId(user.getUserId());
 							status = attenService.saveAttendance(atten);
@@ -182,33 +172,39 @@ public class AttendanceController {
 
 			String usersAttended = "";
 			String assignedUsers = "";
+			String assignedUsersModules = "";
 			String assignedUser = "";
+			String assignedUserModule = "";
 			String notAttended = "";
+			String notAttendedModuleWise = "";
 
 			for (UserModule usrModule : usermodules) {
 				User user = userRepository.findByUserId(usrModule.getUserId());
 
 				if (user != null && user.getUserTypeId() == 3) {
 					assignedUser = assignedUser + user.getUsername() + ", ";
+					assignedUserModule = assignedUserModule + user.getUsername() + "-" + usrModule.getModuleId() + ", ";
 
 				}
 
 			}
 			assignedUsers = assignedUser;
+			assignedUsersModules = assignedUserModule;
 			if (assignedUsers.length() > 2) {
 				assignedUsers = assignedUsers.substring(0, assignedUsers.length() - 2);
 			}
+			if (assignedUsersModules.length() > 2) {
+				assignedUsersModules = assignedUsersModules.substring(0, assignedUsersModules.length() - 2);
+			}
 			notAttended = assignedUsers;
+			notAttendedModuleWise = assignedUsersModules;
 
 			Module module = moduleRepository.findByModuleId(userModule.getModuleId());
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
-			
-			
 
 			for (ModuleActivity moduleActivity : moduleActivities) {
 
-				
 				boolean scheduleFound = true;
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
 						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
@@ -217,10 +213,12 @@ public class AttendanceController {
 					scheduleFound = false;
 				}
 				for (ModuleSchedule moduleSchedule : moduleSchedules) {
-					
+
 					usersAttended = "";
-					List<Attendance> attendances = attenRepository
-							.findByModuleActivityIdAndModuleScheduleId(moduleActivity.getModuleActivityId(),moduleSchedule.getModuleScheduleId());
+
+					notAttendedModuleWise = "";
+					List<Attendance> attendances = attenRepository.findByModuleActivityIdAndModuleScheduleId(
+							moduleActivity.getModuleActivityId(), moduleSchedule.getModuleScheduleId());
 					for (Attendance attendance : attendances) {
 						User user = userRepository.findByUserId(attendance.getUserId());
 						if (user.getUserTypeId() == 3) {
@@ -237,13 +235,20 @@ public class AttendanceController {
 					for (String assign : assigned) {
 						if (!usersAttended.contains(assign.trim())) {
 							notAttended = notAttended + assign + ", ";
+
+							Module moduleFound = moduleRepository.findByModuleId(moduleActivity.getModuleId());
+							if (moduleFound != null) {
+								notAttendedModuleWise = notAttendedModuleWise + assign + "-"
+										+ moduleFound.getModuleName() + ", ";
+							}
 						}
 					}
 					if (notAttended.length() > 2) {
 						notAttended = notAttended.substring(0, notAttended.length() - 2);
 					}
-
-
+					if (notAttendedModuleWise.length() > 2) {
+						notAttendedModuleWise = notAttendedModuleWise.substring(0, notAttendedModuleWise.length() - 2);
+					}
 					scheduleFound = true;
 					if (fromDate != null && toDate != null && !fromDate.equals("null") && !toDate.equals("null")) {
 						if (scheduleFound && moduleSchedule.getModuleScheduled() != null
@@ -266,6 +271,7 @@ public class AttendanceController {
 					attenDetail.setModuleActivity(moduleActivity.getModuleActivity());
 					attenDetail.setActivityId(moduleActivity.getModuleActivityId());
 					attenDetail.setNonAttended(notAttended);
+					attenDetail.setNonAttendedModuleWise(notAttendedModuleWise);
 
 					attenDetail.setAttended(usersAttended);
 					attenDetail.setAssigned(assignedUsers);
@@ -282,7 +288,8 @@ public class AttendanceController {
 		totalActivities = attenDetails.size();
 		HashMap<String, Integer> map = new HashMap<String, Integer>();
 		for (AttendanceDTO attendanceDto : attenDetails) {
-			String[] nonAttend = attendanceDto.getNonAttended().split(",");
+			// String[] nonAttend = attendanceDto.getNonAttended().split(",");
+			String[] nonAttend = attendanceDto.getNonAttendedModuleWise().split(",");
 			for (String assign : nonAttend) {
 				int count = 1;
 				if (map.get(assign.trim()) != null) {
@@ -299,22 +306,50 @@ public class AttendanceController {
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 
-//			 System.out.println(pair.getKey());
-//			 System.out.println(pair.getValue());
-//			 System.out.println(totalActivities);
-//			 System.out.println(totalActivities - (Integer) pair.getValue());
-//			 System.out.println((double) (totalActivities - (Integer)
-//			 pair.getValue()) / totalActivities);
-			Double perc = (double) (totalActivities - (Integer) pair.getValue()) / totalActivities * 100;
-			if (perc < percentage) {
-				belowPercent = belowPercent + "" + (String) pair.getKey();
-				belowPercent = belowPercent + "("
-						+ (df2.format(((double) (totalActivities - (Integer) pair.getValue()) / totalActivities) * 100))
-						+ " %)" + ", ";
-				belowList = belowList + "" + (String) pair.getKey() + ", ";
+			String name = (String) pair.getKey();
+			if (name.indexOf("-") > 0) {
+				name = name.substring(0, name.indexOf("-"));
+			}
+
+			User user = userRepository.findByUsername(name);
+			UserModule usModule1 = new UserModule();
+			usModule1.setUserId(user.getUserId());
+			List<UserModule> userModules1 = userModuleService.getUserModule(usModule1);
+			for (UserModule userModule : userModules1) {
+				// Double perc = (double) (getActivitesCount((String)
+				// pair.getKey(), fromDate, toDate,
+				// userModule.getModuleId()) - (Integer) pair.getValue())
+				// / getActivitesCount((String) pair.getKey(), fromDate, toDate,
+				// userModule.getModuleId()) * 100;
+				Double perc = (double) ((Integer) pair.getValue())
+						/ getActivitesCount(name, fromDate, toDate, userModule.getModuleId()) * 100;
+				if (perc <= percentage) {
+					String temp1 = "";
+					temp1 = temp1 + "" + (String) pair.getKey();
+					Module mod = moduleRepository.findByModuleId(userModule.getModuleId());
+			//		if (mod != null) {
+			//			belowPercent = belowPercent + " (";
+			//		}
+					temp1 = temp1 + " ("
+							+ (df2.format(((double) (getActivitesCount(name, fromDate, toDate, userModule.getModuleId())
+									- (Integer) pair.getValue())
+									/ getActivitesCount(name, fromDate, toDate, userModule.getModuleId())) * 100))
+							+ " %)" + ", ";
+					if (!belowPercent.contains(temp1)) {
+						belowPercent = belowPercent + temp1;
+					}
+					String temp = (String) pair.getKey();
+					if (temp.indexOf("-") > 0) {
+						temp = temp.substring(0, temp.indexOf("-"));
+					}
+					if (!belowList.contains(temp)) {
+						belowList = belowList + "" + temp + ", ";
+					}
+				}
 			}
 			i++;
 		}
+
 		if (belowList.length() > 2) {
 			belowList = belowList.substring(0, belowList.length() - 2);
 		}
@@ -323,13 +358,72 @@ public class AttendanceController {
 		}
 		i = 0;
 		for (AttendanceDTO attendanceDto : attenDetails) {
-			if (i == 0) {
-				attendanceDto.setBelowPercent(belowPercent);
-				attendanceDto.setBelowList(belowList);
-			}
+			// if (i == 0) {
+			attendanceDto.setBelowPercent(belowPercent);
+			attendanceDto.setBelowList(belowList);
+			// }
 			i++;
 		}
 		return attenDetails;
+	}
+
+	private Integer getActivitesCount(String userName, String fromDate, String toDate, int moduleId) {
+
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+		User user = userRepository.findByUsername(userName);
+		UserModule usModule = new UserModule();
+		usModule.setUserId(user.getUserId());
+		Integer totalActivities = 0;
+
+		List<AttendanceDTO> attenDetails = new ArrayList<AttendanceDTO>();
+
+		List<UserModule> userModules = userModuleService.getUserModule(usModule);
+		for (UserModule userModule : userModules) {
+			if (userModule.getModuleId() != moduleId) {
+				continue;
+			}
+
+			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
+
+			for (ModuleActivity moduleActivity : moduleActivities) {
+
+				boolean scheduleFound = true;
+				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
+						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
+
+				if (moduleSchedules.size() == 0) {
+					scheduleFound = false;
+				}
+				for (ModuleSchedule moduleSchedule : moduleSchedules) {
+
+					scheduleFound = true;
+					try {
+						if (fromDate != null && toDate != null && !fromDate.equals("null") && !toDate.equals("null")) {
+							if (scheduleFound && moduleSchedule.getModuleScheduled() != null
+									&& df.parse(fromDate).after(df.parse(new SimpleDateFormat("yyyy-MM-dd")
+											.format(zeroTime(moduleSchedule.getModuleScheduled()))))) {
+								scheduleFound = false;
+							}
+							if (scheduleFound && moduleSchedule.getModuleScheduled() != null
+									&& df.parse(toDate).before(df.parse(new SimpleDateFormat("yyyy-MM-dd")
+											.format(zeroTime(moduleSchedule.getModuleScheduled()))))) {
+								scheduleFound = false;
+							}
+						}
+					} catch (Exception e) {
+						scheduleFound = false;
+					}
+
+					if (scheduleFound) {
+						totalActivities = totalActivities + 1;
+					}
+				}
+
+			}
+		}
+
+		return totalActivities;
 	}
 
 	public Date zeroTime(final Date date) {

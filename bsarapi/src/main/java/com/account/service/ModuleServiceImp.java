@@ -1,5 +1,7 @@
 package com.account.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,18 @@ public class ModuleServiceImp implements ModuleService {
 
 	public Module getModuleByModuleName(String module) {
 		return moduledao.getModuleByModuleName(module);
+	}
+
+	public List<Module> getModuleList() {
+		return moduledao.getModuleList();
+	}
+
+	public boolean enableModule(Module module) {
+		return moduledao.enableModule(module);
+	}
+
+	public boolean disableModule(Module module) {
+		return moduledao.disableModule(module);
 	}
 
 }

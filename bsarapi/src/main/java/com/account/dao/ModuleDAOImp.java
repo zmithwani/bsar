@@ -1,11 +1,14 @@
 package com.account.dao;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.account.model.Module;
 import com.account.model.ModuleActivity;
 import com.account.model.ModuleSchedule;
+import com.account.model.User;
 import com.account.repository.ModuleActivityRepository;
 import com.account.repository.ModuleRepository;
 import com.account.repository.ModuleScheduleRepository;
@@ -79,6 +82,36 @@ public class ModuleDAOImp implements ModuleDAO {
 	public Module getModuleByModuleName(String module) {
 		Module list = moduleRepository.findByModuleName(module);
 		return list;
+	}
+
+	@Override
+	public List<Module> getModuleList() {
+		List<Module> list = moduleRepository.findAll();
+		return list;
+	}
+
+	@Override
+	public boolean enableModule(Module module) {
+		boolean status = false;
+		try {
+			moduleRepository.save(module);
+			status = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@Override
+	public boolean disableModule(Module module) {
+		boolean status = false;
+		try {
+			moduleRepository.save(module);
+			status = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
 	}
 
 }

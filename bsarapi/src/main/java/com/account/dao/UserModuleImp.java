@@ -17,7 +17,7 @@ public class UserModuleImp implements UserModuleDAO {
 
 	@Override
 	public List<UserModule> getUserModule(UserModule userModule) {
-		List<UserModule> list = usermoduleRepository.findByUserId(userModule.getUserId());
+		List<UserModule> list = usermoduleRepository.findByUserIdOrderByModuleId(userModule.getUserId());
 		return list;
 	}
 

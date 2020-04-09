@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,9 @@ public class ModuleController {
 	@Autowired
 	private ModuleService moduleService;
 
+	@Autowired
+	private ModuleRepository moduleRepository;
+
 	@PostMapping("savemodule")
 	public boolean saveModule(@RequestBody StudentDTO studentDTO) {
 		boolean status = false;
@@ -44,6 +48,7 @@ public class ModuleController {
 		module.setModuleCode(studentDTO.getModuleCode());
 		Date date = new Date();
 		module.setCreatedAt(new Timestamp(date.getTime()));
+		module.setStatus(Constant.ACTIVE);
 		Module moduleName = moduleService.getModuleByName(module);
 		Module moduleCode = moduleService.getModuleByCode(module);
 
@@ -65,7 +70,6 @@ public class ModuleController {
 				if (moduleActivityId != null) {
 
 					if (studentDTO.getModuleFrequency() > 0) {
-				//		System.out.println(studentDTO.getModuleFrequency());
 						for (int i = 0; i < 12; i++) {
 							Date stDate = addDays(studentDTO.getModuleFrequency() * 7 * i,
 									studentDTO.getModuleSchedule());
@@ -96,7 +100,6 @@ public class ModuleController {
 				if (moduleActivityId != null) {
 
 					if (studentDTO.getModuleFrequency() > 0) {
-				//		System.out.println(studentDTO.getModuleFrequency());
 						for (int i = 0; i < 12; i++) {
 							Date stDate = addDays(studentDTO.getModuleFrequency() * 7 * i,
 									studentDTO.getModuleSchedule());
@@ -123,6 +126,37 @@ public class ModuleController {
 			}
 		}
 
+		return status;
+	}
+
+	@GetMapping("modulelist")
+	public List<Module> allModule() {
+
+		return moduleService.getModuleList();
+
+	}
+
+	@PostMapping("enablemodule/{moduleid}")
+	public boolean enableModule(@RequestBody Module module, @PathVariable("moduleid") int moduleid) {
+		boolean status = false;
+		Module moduleExist = moduleRepository.findByModuleId(moduleid);
+		if (moduleExist != null) {
+			moduleExist.setStatus(Constant.ACTIVE);
+			moduleExist.setUpdatedAt(new Timestamp(new Date().getTime()));
+			status = moduleService.enableModule(moduleExist);
+		}
+		return status;
+	}
+
+	@PostMapping("disablemodule/{moduleid}")
+	public boolean disableModule(@RequestBody Module module, @PathVariable("moduleid") int moduleid) {
+		boolean status = false;
+		Module moduleExist = moduleRepository.findByModuleId(moduleid);
+		if (moduleExist != null) {
+			moduleExist.setStatus(Constant.LOCKED);
+			moduleExist.setUpdatedAt(new Timestamp(new Date().getTime()));
+			status = moduleService.enableModule(moduleExist);
+		}
 		return status;
 	}
 

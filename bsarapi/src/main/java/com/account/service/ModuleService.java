@@ -1,5 +1,7 @@
 package com.account.service;
 
+import java.util.List;
+
 import com.account.model.Module;
 import com.account.model.ModuleActivity;
 import com.account.model.ModuleSchedule;
@@ -20,5 +22,11 @@ public interface ModuleService {
 	public Module getModuleByCode(Module module);
 
 	public Module getModuleByModuleName(String module);
+
+	public List<Module> getModuleList();
+
+	public boolean enableModule(Module module);
+
+	public boolean disableModule(Module module);
 
 }

@@ -68,7 +68,7 @@ public class UserModuleController {
 
 			List<ModuleActivity> moduleActivities = moduleActivityRepository.findByModuleId(userModule.getModuleId());
 			for (ModuleActivity moduleActivity : moduleActivities) {
-				
+
 				List<ModuleSchedule> moduleSchedules = moduleScheduleRepository
 						.findBymoduleActivityId(moduleActivity.getModuleActivityId());
 
@@ -81,19 +81,19 @@ public class UserModuleController {
 					studentDetail.setModuleCode(module.getModuleCode());
 					studentDetail.setModuleActivity(moduleActivity.getModuleActivity());
 					studentDetail.setActivityId(moduleActivity.getModuleActivityId());
-					
-					
+
 					studentDetail.setModuleSchedule(moduleSchedule.getModuleScheduled());
 					studentDetail.setScheduleId(moduleSchedule.getModuleScheduleId());
-					
-					List<Attendance> attendance = attenRepository
-							.findByUserIdAndModuleActivityIdAndModuleScheduleId(userModule.getUserId(),moduleActivity.getModuleActivityId(),moduleSchedule.getModuleScheduleId());
+
+					List<Attendance> attendance = attenRepository.findByUserIdAndModuleActivityIdAndModuleScheduleId(
+							userModule.getUserId(), moduleActivity.getModuleActivityId(),
+							moduleSchedule.getModuleScheduleId());
 					for (Attendance atten : attendance) {
 						studentDetail.setFingerPrint(atten.getFingerPrint());
 					}
 					studentDetails.add(studentDetail);
-				}	
-				
+				}
+
 			}
 
 		}
@@ -124,7 +124,7 @@ public class UserModuleController {
 
 		List<Module> modules = moduleRepository.findAll();
 		for (Module module : modules) {
-			if (!moduleNames.contains(module.getModuleName())) {
+			if (!moduleNames.contains(module.getModuleName()) && module.getStatus().equals("ACTIVE")) {
 
 				StudentDTO studentDetail = new StudentDTO();
 				studentDetail.setModuleId(module.getModuleId());
